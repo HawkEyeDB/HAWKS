@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram ID Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            margin-top: 30px;
+            font-size: 32px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 20px;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            width: 250px;
+            background-color: #000;
+            color: #00ff00;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        p {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .banned {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h2>Telegram ID Verification</h2>
+    <input type="text" id="telegram-id" placeholder="Enter Telegram ID">
+    <button onclick="verifyTelegramID()">Verify</button>
+    <p id="verification-message"></p>
+
+    <script>
+        function verifyTelegramID() {
+            var telegramID = document.getElementById('telegram-id').value.trim();
+            if (telegramID === "") {
+                alert("Please enter a Telegram ID");
+                return;
+            }
+
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    var ipAddress = data.ip;
+                    var storedData = localStorage.getItem('verificationData');
+                    var verificationData = storedData ? JSON.parse(storedData) : {};
+
+                    var storedInfo = verificationData[ipAddress];
+                    if (storedInfo && storedInfo.telegramID !== telegramID) {
+                        document.getElementById('verification-message').textContent = "You are banned from using multiple accounts.";
+                        document.getElementById('verification-message').classList.add('banned');
+                        return;
+                    }
+
+                    if (storedInfo && storedInfo.telegramID === telegramID) {
+                        document.getElementById('verification-message').textContent = "You are verified.";
+                        document.getElementById('verification-message').classList.remove('banned');
+                        return;
+                    }
+
+                    verificationData[ipAddress] = { "telegramID": telegramID };
+                    localStorage.setItem('verificationData', JSON.stringify(verificationData));
+                    document.getElementById('verification-message').textContent = "You are verified.";
+                    document.getElementById('verification-message').classList.remove('banned');
+                })
+                .catch(error => console.error('Error fetching IP address:', error));
+        }
+    </script>
+</body>
+</html>
